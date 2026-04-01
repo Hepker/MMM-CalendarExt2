@@ -105,6 +105,7 @@ Each event could have these values as dataset.
 - data-title
 - data-location
 - data-categories (comma-separated list of categories, e.g. `"Work,Important"`)
+- data-description
 
 ## category-based styling
 

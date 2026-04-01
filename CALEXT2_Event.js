@@ -118,6 +118,7 @@ class Event {
     eventDom.dataset.title = event.title;
     eventDom.dataset.location = event.location;
     eventDom.dataset.busystatus = event.ms_busystatus;
+    eventDom.dataset.description = event.description;
     Event.applyCategories(event, eventDom, null);
 
     const mainDom = document.createElement("div");
