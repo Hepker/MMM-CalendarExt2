@@ -1,10 +1,12 @@
-<!-- markdownlint-disable-file MD025 -->
+# Filtering, Sorting, Transforming & Icon Map
 
-# Filtering
+## Filtering
 
-You can filter the events in `calendar` and `view`.
-There could be many cases to use filter, I make it as callback function. Sorry for all non-developers. But it's not so difficult.
-The basic concept is here.
+You can filter events in `calendar` and `view` using callback functions. This lets you control which events are displayed.
+
+**When to use:** Show only events matching specific criteria (e.g., all-day events, specific calendars, keywords in title).
+
+Concept:
 
 ```js
 filter: (event) => {
@@ -13,7 +15,7 @@ filter: (event) => {
 }
 ```
 
-By Example
+By Example:
 
 ```js
 filter: (event) => {
@@ -27,10 +29,23 @@ filter: (event) => {
 
 This code says **If this event is fullday event, use it. But if not so, drop it from event list**. When you need only `fullday` events, this could be useful.
 
-# Sorting
+**Advanced example – Combine multiple conditions:**
 
-You can also use sorting in `view`. (`calendar` doesn't support sorting, because to display sorted events depends on each view.)
-Concept is similar.
+```js
+filter: (event) => {
+  return event.isFullday === false && event.title.includes("Birthday");
+};
+```
+
+This shows only non-fullday events with "Birthday" in the title.
+
+## Sorting
+
+You can sort events in `view` using callback functions. The sort order affects how events are displayed.
+
+**When to use:** Change event order by duration, calendar, or custom criteria. Not available for `calendar` configuration.
+
+Concept:
 
 ```js
 sort: (eventA, eventB) => {
@@ -39,7 +54,7 @@ sort: (eventA, eventB) => {
 }
 ```
 
-By Example;
+By Example:
 
 ```js
 sort: (a, b) => {
@@ -49,7 +64,7 @@ sort: (a, b) => {
 
 This code says, **If duration of event A is smaller than that of event B, event A is prior to event B - sort by smaller duration**
 
-Example 2;
+Example 2:
 
 ```js
 sort: (a, b) => {
@@ -63,38 +78,68 @@ sort: (a, b) => {
 
 This means **Sort by calendar Sequence first. when sequence of two events are same, compare startDate and earlier is prior**.
 
-# Transforming
+## Transforming
 
-You can also use transforming in `view`. (`calendar` doesn't support transforming, because to display transformed events depends on each view.)
+You can modify event properties (like icon, color, or title) before rendering in `view`. (`calendar` doesn't support transforming, because transformed events depend on each view.)
 
-Concept;
+**When to use:** Dynamically assign icons, colors, or other properties based on event data. For simple category-to-icon mapping, prefer `iconMap` instead.
 
-```js
-transform: (event)=>{
-  IF THIS event NEED some property TO BE CHANGED,
-  CHANGE THAT property
-  THEN, return event
-}
+**⚠️ Prefer `iconMap`**: For assigning icons by category, use `iconMap` (see [Icon Map](#icon-map) below) instead of `transform`. It's simpler, doesn't require null guards, survives JSON serialization in all MagicMirror² setups, and is less error-prone.
 
-```
-
-By Example;
+Concept:
 
 ```js
 transform: (event) => {
-  if (event.title.search("Birthday") > -1) {
-    // If the event might include "Birthday" in its title,
-    event.icon = "fxemoji:birthdaycake"; // Set icon of that event
+  // Inspect and modify event properties as needed
+  if (/* some condition on event */) {
+    event.icon = "some-icon";  // or modify color, title, etc.
   }
-  return event; // Return that event.
+  return event;
+}
+```
+
+**Example 1 – Single check (safest):**
+
+```js
+transform: (event) => {
+  if (event.title?.includes("Birthday")) {
+    event.icon = "fxemoji:birthday-cake";
+  }
+  return event;
 };
 ```
 
-> **Note:** MagicMirror² fetches the module config from the server as JSON, which means **JavaScript functions in the config are lost** at runtime. The `transform` function only works when the config is loaded directly (e.g., Electron mode with a local `config.js` evaluated in-process). For standard browser-based setups, use `iconMap` instead.
+**Example 2 – Multiple checks (best practice):**
 
-# Icon Map
+```js
+transform: (event) => {
+  const title = (event.title || "").toLowerCase();
 
-The `iconMap` view option assigns icons to events based on their categories. Unlike `transform`, it uses a plain object (string → string mapping) that survives JSON serialization.
+  if (title.includes("birthday")) {
+    event.icon = "fxemoji:birthday-cake";
+  } else if (title.includes("vacation")) {
+    event.icon = "noto:beach-with-umbrella";
+  } else if (title.includes("meeting")) {
+    event.icon = "noto:briefcase";
+  }
+
+  return event;
+};
+```
+
+**⚠️ Null-safety & self-contained rules:**
+
+- Always guard `event.title` before calling methods on it
+- Use `event.title?.includes(...)` (optional chaining) for single checks
+- Use `(event.title || "").toLowerCase()` before multiple checks
+- Keep `transform` self-contained—don't reference external helpers
+- ❌ Old pattern: `event.title.search(...)` **will crash** if title is missing (see [#465](https://github.com/MagicMirrorModules/MMM-CalendarExt2/issues/465))
+
+## Icon Map
+
+The `iconMap` view option assigns icons to events based on their categories. Unlike `transform`, it is plain data (string → string mapping), survives JSON serialization, and works in all MagicMirror² setups.
+
+**When to use:** For simple category-based icon assignment. Works in all MagicMirror² setups without null-guard worries.
 
 ```js
 iconMap: {
@@ -106,33 +151,8 @@ iconMap: {
 }
 ```
 
-Icon names use the format `prefix:name` (e.g. `noto:hospital`, `mdi:home`). The old
-`prefix-name` format (e.g. `noto-hospital`) is still accepted but will log a
-deprecation warning in the browser console.
-
 Icon names use the `prefix:name` format from [Iconify](https://icon-sets.iconify.design/) (e.g. `noto:hospital`, `mdi:home`). For backwards compatibility, the legacy `prefix-name` format (e.g. `noto-hospital`) is automatically converted.
 
-For each event, the module checks `event.categories` (in order) against the keys of `iconMap`. The first match sets `event.icon`. If the event already has an icon set (e.g., by `transform`), `iconMap` does not override it.
+For each event, the module checks `event.categories` (in order) against the keys of `iconMap`. The first match sets `event.icon`. If the event already has an icon set (for example from calendar config defaults or `transform`), `iconMap` does not override it.
 
 For `categories` to be populated, the iCal event must include a `CATEGORIES` property. See [Event-Object.md](Event-Object.md) for the full event shape.
-
-You can also use `categories` with `transform` to assign icons, which is the older approach:
-
-```js
-transform: (event) => {
-  const iconMap = {
-    Birthday: "fxemoji:birthdaycake",
-    Health: "noto:hospital",
-    Work: "noto:briefcase",
-    Vacation: "noto:beach-with-umbrella",
-    Family: "noto:family"
-  };
-  for (const [category, icon] of Object.entries(iconMap)) {
-    if (event.categories.includes(category)) {
-      event.icon = icon;
-      break;
-    }
-  }
-  return event;
-};
-```

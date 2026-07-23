@@ -1,18 +1,18 @@
 {
   "name": "mmm-calendarext2",
-  "version": "2.3.2",
+  "version": "2.3.6",
   "description": "Alternative calendar module of MagicMirror².",
   "keywords": [
     "MagicMirror",
     "calendar"
   ],
-  "homepage": "https://github.com/MMM-CalendarExt2/MMM-CalendarExt2#readme",
+  "homepage": "https://github.com/MagicMirrorModules/MMM-CalendarExt2#readme",
   "bugs": {
-    "url": "https://github.com/MMM-CalendarExt2/MMM-CalendarExt2/issues"
+    "url": "https://github.com/MagicMirrorModules/MMM-CalendarExt2/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MMM-CalendarExt2/MMM-CalendarExt2.git"
+    "url": "git+https://github.com/MagicMirrorModules/MMM-CalendarExt2.git"
   },
   "license": "MIT",
   "author": "eouia <eouia0819@gmail.com>",
@@ -29,7 +29,7 @@
     "prepare": "simple-git-hooks || true",
     "prettier": "prettier . --check",
     "prettier:fix": "prettier . --write",
-    "release": "commit-and-tag-version --commit-all",
+    "release": "SKIP_SIMPLE_GIT_HOOKS=1 commit-and-tag-version --commit-all",
     "stylelint": "stylelint **/*.css",
     "stylelint:fix": "stylelint **/*.css --fix",
     "test": "node --run lint && node --run prettier && node --run test:unit",
@@ -45,7 +45,6 @@
       "prettier --write"
     ],
     "*.md": [
-      "markdownlint-cli2 --fix",
       "prettier --write"
     ]
   },
@@ -80,21 +79,21 @@
   "dependencies": {
     "dayjs": "^1.11.20",
     "iconify-icon": "^3.0.2",
-    "node-ical": "^0.25.6"
+    "node-ical": "^0.26.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@eslint/json": "^1.1.0",
+    "@eslint/json": "^1.2.0",
     "@stylistic/eslint-plugin": "^5.10.0",
-    "commit-and-tag-version": "^12.6.1",
-    "eslint": "^10.0.3",
+    "commit-and-tag-version": "^12.7.3",
+    "eslint": "^10.3.0",
     "eslint-plugin-import-x": "^4.16.2",
-    "globals": "^17.4.0",
-    "lint-staged": "^16.4.0",
-    "markdownlint-cli2": "^0.21.0",
-    "prettier": "^3.8.1",
+    "globals": "^17.6.0",
+    "lint-staged": "^17.0.4",
+    "markdownlint-cli2": "^0.22.1",
+    "prettier": "^3.8.3",
     "simple-git-hooks": "^2.13.1",
-    "stylelint": "^17.4.0",
+    "stylelint": "^17.11.0",
     "stylelint-config-standard": "^40.0.0",
     "stylelint-prettier": "^5.0.3"
   },
